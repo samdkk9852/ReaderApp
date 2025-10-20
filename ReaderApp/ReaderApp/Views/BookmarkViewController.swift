@@ -17,8 +17,21 @@ class BookmarksViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         loadBookmarks()
+        setupNotifications()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    private func setupNotifications() {
+        NotificationCenter.default.addObserver(self, selector: #selector(handleBookmarkChange), name: .bookmarkChanged, object: nil)
     }
 
+    @objc private func handleBookmarkChange() {
+        loadBookmarks()
+    }
+    
     private func setupUI() {
         title = "Bookmarks"
         view.backgroundColor = .systemBackground
@@ -65,6 +78,8 @@ extension BookmarksViewController: UITableViewDataSource, UITableViewDelegate {
             } else {
                 tableView.reloadRows(at: [indexPath], with: .automatic)
             }
+            //Notifiy the updated bookmark status to other viewcontroller
+            NotificationCenter.default.post(name: .bookmarkChanged, object: nil)
         }
         return cell
     }

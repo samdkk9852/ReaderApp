@@ -18,6 +18,11 @@ class ArticlesViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         fetchData()
+        setupNotifications()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     private func setupUI() {
@@ -54,6 +59,13 @@ class ArticlesViewController: UIViewController {
             completion?()
         }
     }
+    private func setupNotifications() {
+        NotificationCenter.default.addObserver(self, selector: #selector(handleBookmarkChange), name: .bookmarkChanged, object: nil)
+    }
+    
+    @objc private func handleBookmarkChange() {
+        fetchData()  // Refreshing the entrire list when bookmark status is changing
+    }
 }
 
 extension ArticlesViewController: UITableViewDataSource, UITableViewDelegate {
@@ -68,6 +80,8 @@ extension ArticlesViewController: UITableViewDataSource, UITableViewDelegate {
             //toggle bookmark
             print("Toggling bookmark for \(article.title)")
             CoreDataManager.shared.bookmarkArticle(article, isBookmarked: !article.isBookmarked)
+            //Notify other viewController about the change
+            NotificationCenter.default.post(name: .bookmarkChanged, object: nil)
             //refresh the UI
             self?.tableView.reloadRows(at: [indexPath], with: .automatic)
         }
@@ -86,3 +100,7 @@ extension ArticlesViewController: UISearchResultsUpdating {
     }
 }
 
+//It will be used to notify the change of bookmark status and update the screen
+extension Notification.Name {
+    static let bookmarkChanged = Notification.Name("BookmarkChangedNotification")
+}

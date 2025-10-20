@@ -51,6 +51,8 @@ class CoreDataManager {
     func bookmarkArticle(_ article: Article, isBookmarked: Bool) {
         article.isBookmarked = isBookmarked
         saveContext()
+        //Notify of bookmark change
+        NotificationCenter.default.post(name: .bookmarkChanged, object: nil)
     }
     
     func  fetchBookmarkedArticles() -> [Article] {
